@@ -182,7 +182,7 @@
     *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
     body{ padding:0; }
     .print-only{ display:block; text-align:center; color:var(--text-3); font-size:.78rem; margin:2px 0 0; }
-    #btnSettings, #btnUpload, #btnReset, .seg-toggle, .tooltip, .col-actions, .demo-banner{ display:none !important; }
+    #btnSettings, #btnReset, .seg-toggle, .tooltip, .col-actions, .demo-banner{ display:none !important; }
     .card{ box-shadow:none; border:1px solid var(--border); break-inside:avoid; }
     .kpi-grid{ break-inside:avoid; }
     .grid-2{ grid-template-columns:1fr; }
@@ -196,7 +196,7 @@
 </style>
 
 <div class="wrap">
-  <div class="demo-banner">Template demo — pre-loaded with synthetic data (Product 1–4, fake order numbers). Try it: edit costs, or upload the sample CSV in <code>sample-data/</code> to see the real import flow run.</div>
+  <div class="demo-banner">Demo view — pre-loaded with synthetic data (Product 1–4, fake order numbers). Try editing costs or settings below. Data import is disabled in this public view.</div>
   <header class="top">
     <div>
       <div class="brand-mark">
@@ -212,7 +212,6 @@
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
       <button class="btn btn-ghost btn-sm" id="btnReset">↺ Demo zurücksetzen</button>
       <button class="btn btn-ghost btn-sm" id="btnSettings">⚙ Stammdaten</button>
-      <button class="btn btn-primary" id="btnUpload">＋ Bestellexport hochladen</button>
     </div>
   </header>
   <p class="print-only" id="printStamp"></p>
@@ -260,7 +259,6 @@
   <p class="footer-note">Alle Werte netto. Vorsteuer ist erstattungsfähig (§ 15 UStG) und kein Aufwand; Retouren mindern als Erlösschmälerung den Umsatz (§ 277 Abs. 1 HGB). Alle Zahlen auf dieser Demo-Seite sind synthetisch.</p>
 </div>
 
-<div class="modal-backdrop" id="uploadModal" hidden></div>
 <div class="modal-backdrop" id="settingsModal" hidden></div>
 
 <script>
@@ -279,7 +277,7 @@
 
   var els = {};
   ["periodSub","kpiGrid","revChart","revMeta","marginChart","marginLegend","costChart","costLegend","costToggle",
-   "productChart","productTable","productMeta","monthTable","btnUpload","btnSettings","btnReset","uploadModal","settingsModal","printStamp"]
+   "productChart","productTable","productMeta","monthTable","btnSettings","btnReset","settingsModal","printStamp"]
    .forEach(function(id){ els[id] = document.getElementById(id); });
 
   var state = { db:null, products:{}, months:[], settings:{ rateDE:6.75, rateIntl:12.75, vatRates:DEFAULT_VAT }, costMode:"pct", draft:null };
@@ -728,7 +726,9 @@
     return state.db.doc('settings/general').set(state.settings);
   }
 
-  // ---------- CSV import ----------
+  // ---------- CSV import engine ----------
+  // This is the real Shopify-export parser the private tool uses. The upload entry point
+  // is intentionally not wired into this public demo's UI — see README.
   function parseCSV(text){
     var rows=[], row=[], field='', inQ=false;
     for (var i=0;i<text.length;i++){
@@ -993,8 +993,6 @@
 
     return refreshSummary;
   }
-
-  els.btnUpload.addEventListener('click', openUploadModal);
 
   // ---------- settings modal (product master + vat + rates) ----------
   function openSettings(){
